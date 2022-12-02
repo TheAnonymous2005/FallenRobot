@@ -1,6 +1,6 @@
 import threading
 
-from sqlalchemy import Column, Integer, String, UnicodeText, distinct, func
+from sqlalchemy import BigInteger, Column, String, UnicodeText, distinct, func
 
 from FallenRobot.modules.sql import BASE, SESSION
 
@@ -21,14 +21,14 @@ class BlackListFilters(BASE):
         return bool(
             isinstance(other, BlackListFilters)
             and self.chat_id == other.chat_id
-            and self.trigger == other.trigger,
+            and self.trigger == other.trigger
         )
 
 
 class BlacklistSettings(BASE):
     __tablename__ = "blacklist_settings"
     chat_id = Column(String(14), primary_key=True)
-    blacklist_type = Column(Integer, default=1)
+    blacklist_type = Column(BigInteger, default=1)
     value = Column(UnicodeText, default="0")
 
     def __init__(self, chat_id, blacklist_type=1, value="0"):
@@ -38,8 +38,7 @@ class BlacklistSettings(BASE):
 
     def __repr__(self):
         return "<{} will executing {} for blacklist trigger.>".format(
-            self.chat_id,
-            self.blacklist_type,
+            self.chat_id, self.blacklist_type
         )
 
 
@@ -59,6 +58,7 @@ def add_to_blacklist(chat_id, trigger):
 
         SESSION.merge(blacklist_filt)  # merge to avoid duplicate key issues
         SESSION.commit()
+        global CHAT_BLACKLISTS
         if CHAT_BLACKLISTS.get(str(chat_id), set()) == set():
             CHAT_BLACKLISTS[str(chat_id)] = {trigger}
         else:
@@ -120,12 +120,11 @@ def set_blacklist_strength(chat_id, blacklist_type, value):
     # 6 = tban
     # 7 = tmute
     with BLACKLIST_SETTINGS_INSERTION_LOCK:
+        global CHAT_SETTINGS_BLACKLISTS
         curr_setting = SESSION.query(BlacklistSettings).get(str(chat_id))
         if not curr_setting:
             curr_setting = BlacklistSettings(
-                chat_id,
-                blacklist_type=int(blacklist_type),
-                value=value,
+                chat_id, blacklist_type=int(blacklist_type), value=value
             )
 
         curr_setting.blacklist_type = int(blacklist_type)
@@ -144,7 +143,8 @@ def get_blacklist_setting(chat_id):
         setting = CHAT_SETTINGS_BLACKLISTS.get(str(chat_id))
         if setting:
             return setting["blacklist_type"], setting["value"]
-        return 1, "0"
+        else:
+            return 1, "0"
 
     finally:
         SESSION.close()
@@ -168,6 +168,7 @@ def __load_chat_blacklists():
 
 
 def __load_chat_settings_blacklists():
+    global CHAT_SETTINGS_BLACKLISTS
     try:
         chats_settings = SESSION.query(BlacklistSettings).all()
         for x in chats_settings:  # remove tuple by ( ,)
