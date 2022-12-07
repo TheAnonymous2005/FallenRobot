@@ -25,7 +25,7 @@ from telegram.ext import (
 from telegram.utils.helpers import mention_html
 
 import FallenRobot.modules.sql.chatbot_sql as sql
-from FallenRobot import dispatcher
+from FallenRobot import dispatcher, BOT_ID, BOT_NAME
 from FallenRobot.modules.helper_funcs.chat_status import user_admin, user_admin_no_reply
 from FallenRobot.modules.helper_funcs.filters import CustomFilters
 from FallenRobot.modules.log_channel import gloggable
@@ -34,20 +34,20 @@ from FallenRobot.modules.log_channel import gloggable
 @run_async
 @user_admin_no_reply
 @gloggable
-def kukirm(update: Update, context: CallbackContext) -> str:
+def fallenrm(update: Update, context: CallbackContext) -> str:
     query: Optional[CallbackQuery] = update.callback_query
     user: Optional[User] = update.effective_user
     match = re.match(r"rm_chat\((.+?)\)", query.data)
     if match:
         user_id = match.group(1)
         chat: Optional[Chat] = update.effective_chat
-        is_kuki = sql.set_kuki(chat.id)
-        if is_kuki:
-            is_kuki = sql.set_kuki(user_id)
+        is_fallen = sql.set_fallen(chat.id)
+        if is_fallen:
+            is_fallen = sql.set_fallen(user_id)
             return (
                 f"<b>{html.escape(chat.title)}:</b>\n"
                 f"AI_DISABLED\n"
-                f"<b>Admin:</b> {mention_html(user.id, html.escape(user.first_name))}\n"
+                f"<b>Admin :</b> {mention_html(user.id, html.escape(user.first_name))}\n"
             )
         else:
             update.effective_message.edit_text(
@@ -63,20 +63,20 @@ def kukirm(update: Update, context: CallbackContext) -> str:
 @run_async
 @user_admin_no_reply
 @gloggable
-def kukiadd(update: Update, context: CallbackContext) -> str:
+def fallenadd(update: Update, context: CallbackContext) -> str:
     query: Optional[CallbackQuery] = update.callback_query
     user: Optional[User] = update.effective_user
     match = re.match(r"add_chat\((.+?)\)", query.data)
     if match:
         user_id = match.group(1)
         chat: Optional[Chat] = update.effective_chat
-        is_kuki = sql.rem_kuki(chat.id)
-        if is_kuki:
-            is_kuki = sql.rem_kuki(user_id)
+        is_fallen = sql.rem_fallen(chat.id)
+        if is_fallen:
+            is_fallen = sql.rem_fallen(user_id)
             return (
                 f"<b>{html.escape(chat.title)}:</b>\n"
                 f"AI_ENABLE\n"
-                f"<b>Admin:</b> {mention_html(user.id, html.escape(user.first_name))}\n"
+                f"<b>Admin :</b> {mention_html(user.id, html.escape(user.first_name))}\n"
             )
         else:
             update.effective_message.edit_text(
@@ -92,8 +92,7 @@ def kukiadd(update: Update, context: CallbackContext) -> str:
 @run_async
 @user_admin
 @gloggable
-def kuki(update: Update, context: CallbackContext):
-    update.effective_user
+def fallen(update: Update, context: CallbackContext):
     message = update.effective_message
     msg = "• ᴄʜᴏᴏsᴇ ᴀɴ ᴏᴩᴛɪᴏɴ ᴛᴏ ᴇɴᴀʙʟᴇ/ᴅɪsᴀʙʟᴇ ᴄʜᴀᴛʙᴏᴛ"
     keyboard = InlineKeyboardMarkup(
@@ -105,18 +104,18 @@ def kuki(update: Update, context: CallbackContext):
         ]
     )
     message.reply_text(
-        msg,
+        text=msg,
         reply_markup=keyboard,
         parse_mode=ParseMode.HTML,
     )
 
 
-def kuki_message(context: CallbackContext, message):
+def fallen_message(context: CallbackContext, message):
     reply_message = message.reply_to_message
-    if message.text.lower() == "kuki":
+    if message.text.lower() == "fallen":
         return True
     if reply_message:
-        if reply_message.from_user.id == context.bot.get_me().id:
+        if reply_message.from_user.id == BOT_ID:
             return True
     else:
         return False
@@ -126,35 +125,33 @@ def chatbot(update: Update, context: CallbackContext):
     message = update.effective_message
     chat_id = update.effective_chat.id
     bot = context.bot
-    is_kuki = sql.is_kuki(chat_id)
-    if is_kuki:
+    is_fallen = sql.is_fallen(chat_id)
+    if is_fallen:
         return
 
     if message.text and not message.document:
-        if not kuki_message(context, message):
+        if not fallen_message(context, message):
             return
-        anon = message.text
         bot.send_chat_action(chat_id, action="typing")
-        url = f"http://api.roseloverx.com/api/chatbot?message={anon}"
+        url = f"https://kora-api.vercel.app/chatbot/2d94e37d-937f-4d28-9196-bd5552cac68b/{BOT_NAME}/Anonymous/message={message.text}"
         request = requests.get(url)
         results = json.loads(request.text)
-        result = results['responses']
-        sleep(0.7)
-        message.reply_text(result[0])
+        sleep(0.5)
+        message.reply_text(results['reply'])
 
 
-__help__ = """
-*Admins only Commands*:
+__help__ = f"""
+*{BOT_NAME} has an chatbot whic provides you a seemingless chatting experience :*
 
-  »  /chatbot *:* Shows chatbot control panel
+ »  /chatbot *:* Shows chatbot control panel
 """
 
 __mod_name__ = "Cʜᴀᴛʙᴏᴛ"
 
 
-CHATBOTK_HANDLER = CommandHandler("chatbot", kuki)
-ADD_CHAT_HANDLER = CallbackQueryHandler(kukiadd, pattern=r"add_chat")
-RM_CHAT_HANDLER = CallbackQueryHandler(kukirm, pattern=r"rm_chat")
+CHATBOTK_HANDLER = CommandHandler("chatbot", fallen)
+ADD_CHAT_HANDLER = CallbackQueryHandler(fallenadd, pattern=r"add_chat")
+RM_CHAT_HANDLER = CallbackQueryHandler(fallenrm, pattern=r"rm_chat")
 CHATBOT_HANDLER = MessageHandler(
     Filters.text
     & (~Filters.regex(r"^#[^\s]+") & ~Filters.regex(r"^!") & ~Filters.regex(r"^\/")),
