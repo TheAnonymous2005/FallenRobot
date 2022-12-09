@@ -1,22 +1,20 @@
+import requests
+
 from telegram import Update
 from telegram.ext import CallbackContext
 
 from FallenRobot import dispatcher
 from FallenRobot.modules.disable import DisableAbleCommandHandler
 
-from TruthDarePy import TD
-
-love = TD()
-
 
 def truth(update: Update, context: CallbackContext):
-    message = update.effective_message
-    message.reply_text(love.truth(lang="en"))
+    truth = requests.get(f"https://api.truthordarebot.xyz/v1/truth").json()["question"]
+    update.effective_message.reply_text(truth)
 
 
 def dare(update: Update, context: CallbackContext):
-    message = update.effective_message
-    message.reply_text(love.dare(lang="en"))
+    dare = requests.get(f"https://api.truthordarebot.xyz/v1/dare").json()["question"]
+    update.effective_message.reply_text(dare)
 
 
 TRUTH_HANDLER = DisableAbleCommandHandler("truth", truth)
