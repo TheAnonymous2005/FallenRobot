@@ -78,6 +78,11 @@
          "required": true,
          "value": ""
       },
+      "ARQ_API_KEY": {
+         "description": "Get bot token from @ARQRobot on TG .",
+         "required": true,
+         "value": ""
+      },
       "TOKEN": {
          "description": "Get bot token from @BotFather on TG",
          "required": true,
