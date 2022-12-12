@@ -13,7 +13,7 @@ async def wall(_, m: Message):
     x = await arq.wall(search)
     y = x.result
     await m.reply_photo(random.choice(y).url_image)
-except Exception as e:
-        await m.edit_text(
+  except Exception as e:
+         await m.edit_text(
             f"`Wallpaper not found for : `{search}`",
         )
