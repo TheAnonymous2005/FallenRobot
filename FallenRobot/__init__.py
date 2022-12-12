@@ -49,7 +49,9 @@ if ENV:
     TOKEN = os.environ.get("TOKEN", None)
     TIME_API_KEY = os.environ.get("TIME_API_KEY", None)
     WORKERS = int(os.environ.get("WORKERS", 8))
-
+    ARQ_API_URL = os.environ.get("ARQ_API_URL", "arq.hamker.dev")
+    ARQ_API_KEY = os.environ.get("ARQ_API_KEY")
+    
     try:
         OWNER_ID = int(os.environ.get("OWNER_ID", None))
     except ValueError:
@@ -103,7 +105,9 @@ else:
     TOKEN = Config.TOKEN
     TIME_API_KEY = Config.TIME_API_KEY
     WORKERS = Config.WORKERS
-
+    ARQ_API_URL = Config.ARQ_API_URL
+    ARQ_API_KEY = Config.ARQ_API_KEY
+    
     try:
         OWNER_ID = int(Config.OWNER_ID)
     except ValueError:
@@ -147,6 +151,9 @@ telethn = TelegramClient("Fallen", API_ID, API_HASH)
 pbot = Client("FallenRobot", api_id=API_ID, api_hash=API_HASH, bot_token=TOKEN)
 dispatcher = updater.dispatcher
 aiohttpsession = ClientSession()
+
+# ARQ Client
+arq = ARQ(ARQ_API_URL, ARQ_API_KEY, aiohttpsession)
 
 print("[INFO]: Getting Bot Info...")
 BOT_ID = dispatcher.bot.id
