@@ -24,6 +24,10 @@ class Config(object):
 
     OWNER_ID =   # User id of your telegram account (Must be integer)
 
+    ARQ_API_KEY = "" # Get this value from @ARQRobot on Telegram
+    ARQ_API_URL = "arq.hamker.dev"
+    
+    
   # Optional fields
     BL_CHATS = []  # List of groups that you want blacklisted.
     DRAGONS = []  # User id of sudo users
